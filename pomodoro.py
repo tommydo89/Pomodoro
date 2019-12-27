@@ -1,6 +1,7 @@
 import tkinter as tk
-
+import timer as t
 class Pomodoro(tk.Tk):
+
 	def __init__(self, *args, **kwargs):
 
 		tk.Tk.__init__(self, *args, **kwargs)
@@ -11,25 +12,14 @@ class Pomodoro(tk.Tk):
 		container.grid_rowconfigure(0, weight=1)
 		container.grid_columnconfigure(0, weight=1)
 
-		self.frames = {} # dictionary for the different pages in the app
 		self.focus_duration = tk.StringVar()
 		self.break_duration = tk.StringVar()
 
-		for F in (StartPage, MainPage): # loop to initialize the different pages of the app
-
-			frame = F(container, self)
-
-			self.frames[F] = frame
-			frame.grid(row=0, column=0, sticky="nsew")
-
-		self.show_frame(StartPage) 
-
-	def show_frame(self, cont): # function to switch frames
-		frame = self.frames[cont]
+		frame = StartPage(container, self)
+		frame.grid(row=0, column=0, sticky="nsew")
 		frame.tkraise()
 
 class StartPage(tk.Frame):
-
 
 	def __init__(self, parent, controller):
 		tk.Frame.__init__(self, parent)
@@ -37,7 +27,9 @@ class StartPage(tk.Frame):
 		def onNext():
 			controller.focus_duration.set(focus_text.get())
 			controller.break_duration.set(break_text.get())
-			controller.show_frame(MainPage)
+			nextFrame = MainPage(parent, controller)
+			nextFrame.grid(row=0, column=0, sticky="nsew")
+			nextFrame.tkraise()
 
 		# labels
 		focus_label = tk.Label(self, text="Focus duration:")
@@ -71,13 +63,34 @@ class MainPage(tk.Frame):
 
 	def __init__(self, parent, controller):
 		tk.Frame.__init__(self, parent)
+		self.focus_duration = int(controller.focus_duration.get())
+		self.break_duration = int(controller.break_duration.get())
 		self.current_session = "Focus"
-		self.current_time = (controller.focus_duration, 0) # (minutes, seconds)
+		self.timer = t.Timer(self.focus_duration)
 		self.focus_ct = 0
 		self.break_ct = 0
-		label = tk.Label(self, text=self.current_session)
-		label.pack()
+		self.running = True
+		self.label = tk.Label(self, text=self.timer.toStr())
+		self.label.pack()
+		start_btn = tk.Button(self, text="Start", command=self.countdown)
+		start_btn.pack()
 
+	def countdown(self):
+		if self.running != False:
+			if self.timer.timesUp():
+				self.switch()
+			else:
+				self.timer.decrement()
+			self.label.configure(text=self.timer.toStr())
+			self.label.after(1000, self.countdown)
+
+	def switch(self):
+		if self.current_session == "Focus":
+			self.current_session = "Break"
+			self.timer.reset(self.break_duration)
+		else:
+			self.current_session = "Focus"
+			self.timer.reset(self.focus_duration)
 
 
 app = Pomodoro()
