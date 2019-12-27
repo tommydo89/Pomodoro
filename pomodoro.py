@@ -5,16 +5,17 @@ class Pomodoro(tk.Tk):
 	def __init__(self, *args, **kwargs):
 
 		tk.Tk.__init__(self, *args, **kwargs)
-		container = tk.Frame(self)
+		container = tk.Frame(self) # container for swapping from starting page to main page
 
 		container.pack(side="top", fill="both", expand=True)
 
 		container.grid_rowconfigure(0, weight=1)
 		container.grid_columnconfigure(0, weight=1)
 
-		self.focus_duration = tk.StringVar()
-		self.break_duration = tk.StringVar()
+		self.focus_duration = tk.StringVar() # stores the input for focus duration
+		self.break_duration = tk.StringVar() # stores the input for break duration
 
+		# starting page is displayed first
 		frame = StartPage(container, self)
 		frame.grid(row=0, column=0, sticky="nsew")
 		frame.tkraise()
@@ -24,7 +25,8 @@ class StartPage(tk.Frame):
 	def __init__(self, parent, controller):
 		tk.Frame.__init__(self, parent)
 
-		def onNext():
+		# stores the input values for the focus/break durations and then swaps frames
+		def onNext(): 
 			controller.focus_duration.set(focus_text.get())
 			controller.break_duration.set(break_text.get())
 			nextFrame = MainPage(parent, controller)
@@ -63,18 +65,19 @@ class MainPage(tk.Frame):
 
 	def __init__(self, parent, controller):
 		tk.Frame.__init__(self, parent)
-		self.focus_duration = int(controller.focus_duration.get())
-		self.break_duration = int(controller.break_duration.get())
+		self.focus_duration = int(controller.focus_duration.get()) # retrieves focus duration from the root 
+		self.break_duration = int(controller.break_duration.get()) # retrieves break duration from the root
 		self.current_session = "Focus"
-		self.timer = t.Timer(self.focus_duration)
-		self.focus_ct = 0
-		self.break_ct = 0
-		self.running = True
-		self.label = tk.Label(self, text=self.timer.toStr())
+		self.timer = t.Timer(self.focus_duration) # Timer initialized
+		self.focus_ct = 0 # number of completed focus sessions
+		self.break_ct = 0 # number of completed break sessions
+		self.running = True # controls count down of the timer
+		self.label = tk.Label(self, text=self.timer.toStr()) # dynamic label that simulates the timer
 		self.label.pack()
-		start_btn = tk.Button(self, text="Start", command=self.countdown)
+		start_btn = tk.Button(self, text="Start", command=self.countdown) # start button that starts the timer
 		start_btn.pack()
 
+	# count down function
 	def countdown(self):
 		if self.running != False:
 			if self.timer.timesUp():
@@ -84,6 +87,7 @@ class MainPage(tk.Frame):
 			self.label.configure(text=self.timer.toStr())
 			self.label.after(1000, self.countdown)
 
+	# switches the type of session and resets the timer 
 	def switch(self):
 		if self.current_session == "Focus":
 			self.current_session = "Break"
