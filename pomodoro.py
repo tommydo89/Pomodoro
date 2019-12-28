@@ -71,21 +71,31 @@ class MainPage(tk.Frame):
 		self.timer = t.Timer(self.focus_duration) # Timer initialized
 		self.focus_ct = 0 # number of completed focus sessions
 		self.break_ct = 0 # number of completed break sessions
-		self.running = True # controls count down of the timer
+		self.running = False # controls count down of the timer
 		self.label = tk.Label(self, text=self.timer.toStr()) # dynamic label that simulates the timer
 		self.label.pack()
-		start_btn = tk.Button(self, text="Start", command=self.countdown) # start button that starts the timer
-		start_btn.pack()
+		self.start_pause = tk.Button(self, text="Start", command=self.start_pause) # button that starts/pauses the timer
+		self.start_pause.pack()
 
-	# count down function
-	def countdown(self):
+
+	def start_pause(self):
+		if self.running == False:
+			self.running = True
+			self.start_pause.configure(text="Pause")
+			self.start()
+		else:
+			self.start_pause.configure(text="Start")
+			self.pause()
+
+	# starts the timer
+	def start(self):
 		if self.running != False:
 			if self.timer.timesUp():
 				self.switch()
 			else:
 				self.timer.decrement()
 			self.label.configure(text=self.timer.toStr())
-			self.label.after(1000, self.countdown)
+			self.label.after(1000, self.start)
 
 	# switches the type of session and resets the timer 
 	def switch(self):
@@ -95,6 +105,10 @@ class MainPage(tk.Frame):
 		else:
 			self.current_session = "Focus"
 			self.timer.reset(self.focus_duration)
+
+	# pauses the timer
+	def pause(self):
+		self.running = False
 
 
 app = Pomodoro()
