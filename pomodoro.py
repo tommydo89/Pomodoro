@@ -67,43 +67,45 @@ class MainPage(tk.Frame):
 		tk.Frame.__init__(self, parent)
 		self.focus_duration = int(controller.focus_duration.get()) # retrieves focus duration from the root 
 		self.break_duration = int(controller.break_duration.get()) # retrieves break duration from the root
-		self.current_session = "Focus"
-		self.timer = t.Timer(self.focus_duration) # Timer initialized
+		self.current_session = tk.StringVar() # variable for current session label
+		self.current_session.set("Focus")
+		self.session_label = tk.Label(self, textvariable=self.current_session) # current session label
+		self.session_label.pack()
+		self.timer = t.Timer(self.focus_duration) # initialize timer
 		self.focus_ct = 0 # number of completed focus sessions
 		self.break_ct = 0 # number of completed break sessions
 		self.running = False # controls count down of the timer
-		self.label = tk.Label(self, text=self.timer.toStr()) # dynamic label that simulates the timer
-		self.label.pack()
-		self.start_pause = tk.Button(self, text="Start", command=self.start_pause) # button that starts/pauses the timer
-		self.start_pause.pack()
-
+		self.time = tk.Label(self, text=self.timer.toStr()) # dynamic label that simulates the timer
+		self.time.pack()
+		self.start_pause_btn = tk.Button(self, text="Start", command=self.start_pause) # button that starts/pauses the timer
+		self.start_pause_btn.pack()
 
 	def start_pause(self):
-		if self.running == False:
-			self.running = True
-			self.start_pause.configure(text="Pause")
+		self.running ^= 1 # flips the value of this boolean
+		if self.running == True:
 			self.start()
+			self.start_pause_btn.configure(text="Pause")
 		else:
-			self.start_pause.configure(text="Start")
 			self.pause()
+			self.start_pause_btn.configure(text="Start")
 
 	# starts the timer
 	def start(self):
 		if self.running != False:
-			if self.timer.timesUp():
+			if self.timer.timesUp(): # switch the type of session when the timer is up
 				self.switch()
 			else:
-				self.timer.decrement()
-			self.label.configure(text=self.timer.toStr())
-			self.label.after(1000, self.start)
+				self.timer.decrement() # decrements the timer by 1 second
+			self.time.configure(text=self.timer.toStr())
+			self.time.after(1000, self.start) # recurse after 1 second
 
 	# switches the type of session and resets the timer 
 	def switch(self):
-		if self.current_session == "Focus":
-			self.current_session = "Break"
+		if self.current_session.get() == "Focus":
+			self.current_session.set("Break")
 			self.timer.reset(self.break_duration)
 		else:
-			self.current_session = "Focus"
+			self.current_session.set("Focus")
 			self.timer.reset(self.focus_duration)
 
 	# pauses the timer
