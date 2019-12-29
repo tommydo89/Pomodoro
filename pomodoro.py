@@ -65,23 +65,30 @@ class MainPage(tk.Frame):
 
 	def __init__(self, container, controller):
 		tk.Frame.__init__(self, container)
-		self.grid_columnconfigure((0,1), weight=1)
+		self.grid_columnconfigure((0,2), weight=1)
 		self.focus_duration = int(controller.focus_duration.get()) # retrieves focus duration from the root 
 		self.break_duration = int(controller.break_duration.get()) # retrieves break duration from the root
 		self.current_session = tk.StringVar() # variable for current session label
 		self.current_session.set("Focus")
-		self.session_label = tk.Label(self, textvariable=self.current_session) # current session label
-		self.session_label.grid(row=0, column=0, columnspan=2)
+		self.session_label = tk.Label(self, textvariable=self.current_session, font="Courier 15 bold") # current session label
+		self.session_label.grid(row=0, column=0, columnspan=3, pady=(5,0))
 		self.timer = t.Timer(self.focus_duration) # initialize timer
+		self.running = False # controls count down of the timer
+		self.time = tk.Label(self, text=self.timer.toStr(), font="Verdana 25") # dynamic label that simulates the timer
+		# self.time.config(font=("Arial",35))
+		self.time.grid(row=1, column=0, columnspan=3)
+		self.start_pause_btn = tk.Button(self, text="Start", command=self.start_pause) # button that starts/pauses the timer
+		self.start_pause_btn.grid(row=2, column=1, sticky="EW", pady=5)
+		self.plus_ten_btn = tk.Button(self, text="+10s", command=self.plus_ten)
+		self.plus_ten_btn.grid(row=2, column=2, sticky="W", pady=5)
+		self.minus_ten_btn = tk.Button(self, text="-10s", command=self.minus_ten)
+		self.minus_ten_btn.grid(row=2, column=0, sticky="E", pady=5)
+		self.skip_btn = tk.Button(self, text="Skip", command=self.skip)
+		self.skip_btn.grid(row=3, column=0, columnspan=3, sticky="nsew", padx=5, pady=5)
 		self.focus_ct = 0 # number of completed focus sessions
 		self.break_ct = 0 # number of completed break sessions
-		self.running = False # controls count down of the timer
-		self.time = tk.Label(self, text=self.timer.toStr()) # dynamic label that simulates the timer
-		self.time.grid(row=1, column=0, columnspan=2)
-		self.start_pause_btn = tk.Button(self, text="Start", command=self.start_pause) # button that starts/pauses the timer
-		self.start_pause_btn.grid(row=2, column=0, sticky="E")
-		self.skip_btn = tk.Button(self, text="Skip", command=self.skip)
-		self.skip_btn.grid(row=2, column=1, sticky="W")
+		self.session_cts = tk.Label(self, text="Focus: " + str(self.focus_ct) + "  " + "Break: " + str(self.break_ct))
+		self.session_cts.grid(row=4, column=0, columnspan=3, padx=5, pady=5)
 
 	def start_pause(self):
 		self.running ^= 1 # flips the value of this boolean
@@ -95,11 +102,20 @@ class MainPage(tk.Frame):
 	def start(self):
 		if self.running != False:
 			if self.timer.timesUp(): # switch the type of session when the timer is up
+				self.increment_session_ct()
 				self.switch()
 			else:
 				self.timer.decrement() # decrements the timer by 1 second
 			self.time.configure(text=self.timer.toStr())
 			self.time.after(1000, self.start) # recurse after 1 second
+
+	# increments the session counts after a session has been completed
+	def increment_session_ct(self):
+		if self.current_session.get() == "Focus":
+			self.focus_ct += 1
+		else:
+			self.break_ct += 1
+		self.session_cts.configure(text="Focus:" + str(self.focus_ct) + " Break:" + str(self.break_ct))
 
 	# switches the type of session and resets the timer 
 	def switch(self):
@@ -115,10 +131,21 @@ class MainPage(tk.Frame):
 	def pause(self):
 		self.running = False
 
+	# skips to the next session
 	def skip(self):
 		self.running = False
 		self.switch()
 		self.start_pause_btn.configure(text="Start")
+
+	# adds 10s to the timer
+	def plus_ten(self):
+		self.timer.plus_ten()
+		self.time.configure(text=self.timer.toStr())
+
+	# subtracts 10s from the timer
+	def minus_ten(self):
+		self.timer.minus_ten()
+		self.time.configure(text=self.timer.toStr())
 
 
 app = Pomodoro()

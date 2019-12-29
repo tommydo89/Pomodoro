@@ -18,6 +18,21 @@ class Timer:
 	def timesUp(self): # returns true if timer has hit 0
 		return self.minute == 0 and self.second == 0
 
+	def plus_ten(self): # adds 10s to the timer
+		if self.second >= 50:
+			self.minute += 1
+			self.second %= 50
+		else:
+			self.second += 10
+
+	def minus_ten(self): # subtracts 10s from the timer
+		if self.second <= 9:
+			self.minute -= 1
+			self.second += 50
+		else:
+			self.second -= 10
+
+
 	def toStr(self): # returns timer in a string format
 		if self.second < 10:
 			str_seconds = '0' + str(self.second)
