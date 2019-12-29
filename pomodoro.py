@@ -7,7 +7,7 @@ class Pomodoro(tk.Tk):
 		tk.Tk.__init__(self, *args, **kwargs)
 		container = tk.Frame(self) # container for swapping from starting page to main page
 
-		container.pack(side="top", fill="both", expand=True)
+		container.grid(row=0, column=0, sticky="nesw")
 
 		container.grid_rowconfigure(0, weight=1)
 		container.grid_columnconfigure(0, weight=1)
@@ -22,14 +22,14 @@ class Pomodoro(tk.Tk):
 
 class StartPage(tk.Frame):
 
-	def __init__(self, parent, controller):
-		tk.Frame.__init__(self, parent)
+	def __init__(self, container, controller):
+		tk.Frame.__init__(self, container)
 
 		# stores the input values for the focus/break durations and then swaps frames
 		def onNext(): 
 			controller.focus_duration.set(focus_text.get())
 			controller.break_duration.set(break_text.get())
-			nextFrame = MainPage(parent, controller)
+			nextFrame = MainPage(container, controller)
 			nextFrame.grid(row=0, column=0, sticky="nsew")
 			nextFrame.tkraise()
 
@@ -63,22 +63,25 @@ class StartPage(tk.Frame):
 
 class MainPage(tk.Frame):
 
-	def __init__(self, parent, controller):
-		tk.Frame.__init__(self, parent)
+	def __init__(self, container, controller):
+		tk.Frame.__init__(self, container)
+		self.grid_columnconfigure((0,1), weight=1)
 		self.focus_duration = int(controller.focus_duration.get()) # retrieves focus duration from the root 
 		self.break_duration = int(controller.break_duration.get()) # retrieves break duration from the root
 		self.current_session = tk.StringVar() # variable for current session label
 		self.current_session.set("Focus")
 		self.session_label = tk.Label(self, textvariable=self.current_session) # current session label
-		self.session_label.pack()
+		self.session_label.grid(row=0, column=0, columnspan=2)
 		self.timer = t.Timer(self.focus_duration) # initialize timer
 		self.focus_ct = 0 # number of completed focus sessions
 		self.break_ct = 0 # number of completed break sessions
 		self.running = False # controls count down of the timer
 		self.time = tk.Label(self, text=self.timer.toStr()) # dynamic label that simulates the timer
-		self.time.pack()
+		self.time.grid(row=1, column=0, columnspan=2)
 		self.start_pause_btn = tk.Button(self, text="Start", command=self.start_pause) # button that starts/pauses the timer
-		self.start_pause_btn.pack()
+		self.start_pause_btn.grid(row=2, column=0, sticky="E")
+		self.skip_btn = tk.Button(self, text="Skip", command=self.skip)
+		self.skip_btn.grid(row=2, column=1, sticky="W")
 
 	def start_pause(self):
 		self.running ^= 1 # flips the value of this boolean
@@ -86,7 +89,6 @@ class MainPage(tk.Frame):
 			self.start()
 			self.start_pause_btn.configure(text="Pause")
 		else:
-			self.pause()
 			self.start_pause_btn.configure(text="Start")
 
 	# starts the timer
@@ -107,10 +109,16 @@ class MainPage(tk.Frame):
 		else:
 			self.current_session.set("Focus")
 			self.timer.reset(self.focus_duration)
+		self.time.configure(text=self.timer.toStr())
 
 	# pauses the timer
 	def pause(self):
 		self.running = False
+
+	def skip(self):
+		self.running = False
+		self.switch()
+		self.start_pause_btn.configure(text="Start")
 
 
 app = Pomodoro()
