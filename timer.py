@@ -26,7 +26,9 @@ class Timer:
 			self.second += 10
 
 	def minus_ten(self): # subtracts 10s from the timer
-		if self.second <= 9:
+		if self.second <= 10 and self.minute == 0:
+			self.second = 0
+		elif self.second <= 9:
 			self.minute -= 1
 			self.second += 50
 		else:

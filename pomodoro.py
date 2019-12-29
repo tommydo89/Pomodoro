@@ -1,4 +1,5 @@
 import tkinter as tk
+import tkinter.messagebox
 import timer as t
 class Pomodoro(tk.Tk):
 
@@ -65,6 +66,7 @@ class MainPage(tk.Frame):
 
 	def __init__(self, container, controller):
 		tk.Frame.__init__(self, container)
+		self.controller = controller
 		self.grid_columnconfigure((0,2), weight=1)
 		self.focus_duration = int(controller.focus_duration.get()) # retrieves focus duration from the root 
 		self.break_duration = int(controller.break_duration.get()) # retrieves break duration from the root
@@ -103,6 +105,7 @@ class MainPage(tk.Frame):
 		if self.running != False:
 			if self.timer.timesUp(): # switch the type of session when the timer is up
 				self.increment_session_ct()
+				tkinter.messagebox.showinfo("Alert", "It's time to switch!")
 				self.switch()
 			else:
 				self.timer.decrement() # decrements the timer by 1 second
@@ -147,6 +150,10 @@ class MainPage(tk.Frame):
 		self.timer.minus_ten()
 		self.time.configure(text=self.timer.toStr())
 
+	def raise_above_all(window):
+		window.attributes("-topmost", True)
+		window.update()
+		window.attributes("-topmost", False)
 
 app = Pomodoro()
 app.mainloop()
